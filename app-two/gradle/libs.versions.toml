@@ -1,0 +1,6 @@
+[versions]
+companyCoreSdk = "2.1.0"
+
+[libraries]
+shared-ui = { module = "com.company.core:shared-ui", version.ref = "companyCoreSdk" }
+shared-data = { module = "com.company.core:shared-data", version.ref = "companyCoreSdk" }

@@ -1,0 +1,6 @@
+{
+  "name": "Hub & Spoke Arch",
+  "description": "Demonstrates independent applications utilizing a remote artifacts core engine with Gradle composite builds for local development.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
