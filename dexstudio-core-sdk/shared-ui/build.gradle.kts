@@ -10,8 +10,9 @@ kotlin {
     android {
         namespace = "com.dexstudio.core.sharedui"
         compileSdk = 36
-        minSdk = 24
 
+        minSdk = 26
+        
         compilerOptions {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
@@ -41,6 +42,14 @@ kotlin {
             implementation(libs.coil3.network.ktor3)
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            
+            implementation(libs.compottie)
+            implementation(libs.compottie.resources)
+            
+            // Liquid Glass — Haze backdrop blur
+            implementation(libs.haze)
+            implementation(libs.haze.blur)
+            implementation(libs.haze.blur.materials)
         }
     }
 }

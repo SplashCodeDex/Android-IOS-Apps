@@ -11,59 +11,68 @@ import com.dexstudio.core.sharedui.designsystem.token.*
 @Composable
 fun DeXStudioTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    reduceTransparency: Boolean = false,
+    content: @Composable () -> Unit,
 ) {
     val colorScheme = if (useDarkTheme) DarkAppColorScheme else LightAppColorScheme
     val textStyles = getAppTextStyles()
     val shapes = AppShapes()
 
+    // Map iOS semantic colors → M3 color scheme slots.
+    // M3 is the underlying Compose rendering engine; our AppColorScheme
+    // is the source of truth, but M3 components need these mapped.
     val m3Colors = if (useDarkTheme) {
         darkColorScheme(
-            primary = colorScheme.primaryAction,
-            onPrimary = colorScheme.onPrimaryAction,
-            secondary = colorScheme.secondaryAction,
-            onSecondary = colorScheme.textPrimary,
-            tertiary = colorScheme.secondaryAction,
-            onTertiary = colorScheme.textPrimary,
-            background = colorScheme.background,
-            onBackground = colorScheme.onBackground,
-            surface = colorScheme.surfaceDefault,
-            onSurface = colorScheme.onSurface,
-            surfaceVariant = colorScheme.surfaceElevated1,
-            onSurfaceVariant = colorScheme.textSecondary,
-            error = colorScheme.error,
-            onError = colorScheme.onError,
-            outline = colorScheme.textTertiary
+            primary = colorScheme.systemBlue,
+            onPrimary = Color.White,
+            secondary = colorScheme.systemGray5,
+            onSecondary = colorScheme.label,
+            tertiary = colorScheme.systemIndigo,
+            onTertiary = Color.White,
+            background = colorScheme.systemBackground,
+            onBackground = colorScheme.label,
+            surface = colorScheme.secondarySystemBackground,
+            onSurface = colorScheme.label,
+            surfaceVariant = colorScheme.tertiarySystemBackground,
+            onSurfaceVariant = colorScheme.secondaryLabel,
+            error = colorScheme.systemRed,
+            onError = Color.White,
+            outline = colorScheme.separator,
+            outlineVariant = colorScheme.opaqueSeparator,
+            surfaceContainerHighest = colorScheme.secondarySystemGroupedBackground,
         )
     } else {
         lightColorScheme(
-            primary = colorScheme.primaryAction,
-            onPrimary = colorScheme.onPrimaryAction,
-            secondary = colorScheme.secondaryAction,
-            onSecondary = colorScheme.textPrimary,
-            tertiary = colorScheme.secondaryAction,
-            onTertiary = colorScheme.textPrimary,
-            background = colorScheme.background,
-            onBackground = colorScheme.onBackground,
-            surface = colorScheme.surfaceDefault,
-            onSurface = colorScheme.onSurface,
-            surfaceVariant = colorScheme.surfaceElevated1,
-            onSurfaceVariant = colorScheme.textSecondary,
-            error = colorScheme.error,
-            onError = colorScheme.onError,
-            outline = colorScheme.textTertiary
+            primary = colorScheme.systemBlue,
+            onPrimary = Color.White,
+            secondary = colorScheme.systemGray5,
+            onSecondary = colorScheme.label,
+            tertiary = colorScheme.systemIndigo,
+            onTertiary = Color.White,
+            background = colorScheme.systemBackground,
+            onBackground = colorScheme.label,
+            surface = colorScheme.secondarySystemBackground,
+            onSurface = colorScheme.label,
+            surfaceVariant = colorScheme.tertiarySystemBackground,
+            onSurfaceVariant = colorScheme.secondaryLabel,
+            error = colorScheme.systemRed,
+            onError = Color.White,
+            outline = colorScheme.separator,
+            outlineVariant = colorScheme.opaqueSeparator,
+            surfaceContainerHighest = colorScheme.secondarySystemGroupedBackground,
         )
     }
 
     CompositionLocalProvider(
         LocalAppColorScheme provides colorScheme,
         LocalAppTextStyles provides textStyles,
-        LocalAppShapes provides shapes
+        LocalAppShapes provides shapes,
+        LocalReduceTransparency provides reduceTransparency,
     ) {
         MaterialTheme(
             colorScheme = m3Colors,
             typography = getM3Typography(textStyles),
-            content = content
+            content = content,
         )
     }
 }
@@ -81,3 +90,6 @@ object DeXStudioTheme {
         @Composable
         get() = LocalAppShapes.current
 }
+
+// Private import needed for Color.White literals in M3 mapping
+private val Color = androidx.compose.ui.graphics.Color

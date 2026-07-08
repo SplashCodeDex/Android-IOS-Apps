@@ -12,13 +12,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.dexstudio.core.sharedui.designsystem.theme.DeXStudioTheme
 import com.dexstudio.core.sharedui.designsystem.token.AppSpacing
+import com.dexstudio.core.sharedui.designsystem.token.GlassVariant
+import com.dexstudio.core.sharedui.util.glassBg
 import com.dexstudio.core.sharedui.util.pillShape
 import com.dexstudio.core.sharedui.util.pressScale
 
+/**
+ * iOS 27 Primary Prominent Button (DESIGN.md §3.1)
+ *
+ * Solid semantic tint fill.
+ * Used for primary actions (Save, Submit, Continue).
+ */
 @Composable
 fun PrimaryCTA(
     text: String,
@@ -32,17 +39,23 @@ fun PrimaryCTA(
             contentColor = DeXStudioTheme.appColors.onPrimaryAction
         ),
         shape = DeXStudioTheme.appShapes.standard,
-        contentPadding = PaddingValues(horizontal = AppSpacing.sp15, vertical = AppSpacing.sp8),
+        contentPadding = PaddingValues(horizontal = AppSpacing.m, vertical = AppSpacing.listRowVerticalPadding),
         modifier = modifier.pressScale(onClick = onClick)
     ) {
         Text(
             text = text,
-            style = DeXStudioTheme.textStyles.body,
+            style = DeXStudioTheme.textStyles.headline,
             color = DeXStudioTheme.appColors.onPrimaryAction
         )
     }
 }
 
+/**
+ * iOS 27 Tonal Button (DESIGN.md §3.2)
+ *
+ * Gray/Secondary fill.
+ * Used for non-primary actions, filters, or cancel buttons.
+ */
 @Composable
 fun DarkCTA(
     text: String,
@@ -52,48 +65,52 @@ fun DarkCTA(
     Button(
         onClick = onClick,
         colors = ButtonDefaults.buttonColors(
-            containerColor = DeXStudioTheme.appColors.secondaryAction,
-            contentColor = DeXStudioTheme.appColors.onPrimaryAction
+            containerColor = DeXStudioTheme.appColors.secondarySystemGroupedBackground,
+            contentColor = DeXStudioTheme.appColors.primaryAction
         ),
         shape = DeXStudioTheme.appShapes.standard,
-        contentPadding = PaddingValues(horizontal = AppSpacing.sp15, vertical = AppSpacing.sp8),
+        contentPadding = PaddingValues(horizontal = AppSpacing.m, vertical = AppSpacing.listRowVerticalPadding),
         modifier = modifier.pressScale(onClick = onClick)
     ) {
         Text(
             text = text,
             style = DeXStudioTheme.textStyles.body,
-            color = DeXStudioTheme.appColors.onPrimaryAction
+            color = DeXStudioTheme.appColors.primaryAction
         )
     }
 }
 
+/**
+ * Pill-shaped outline link button.
+ */
 @Composable
 fun PillLink(
     text: String,
-    isDarkBg: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val linkColor = if (isDarkBg) DeXStudioTheme.appColors.linkOnDark else DeXStudioTheme.appColors.link
+    val linkColor = DeXStudioTheme.appColors.link
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .pressScale(onClick = onClick)
-            .padding(horizontal = AppSpacing.sp14, vertical = AppSpacing.sp8)
             .pillShape()
             .border(1.dp, linkColor, DeXStudioTheme.appShapes.pill)
-            .padding(horizontal = AppSpacing.sp14, vertical = AppSpacing.sp8)
+            .padding(horizontal = AppSpacing.sp14, vertical = AppSpacing.s)
     ) {
         Text(
             text = "$text >", // Emulated chevron
-            style = DeXStudioTheme.textStyles.link,
+            style = DeXStudioTheme.textStyles.callout, // mapped to link previously
             color = linkColor
         )
     }
 }
 
+/**
+ * Compact filter button (DESIGN.md §3.5 Pill / Capsule)
+ */
 @Composable
 fun FilterButton(
     text: String,
@@ -104,18 +121,20 @@ fun FilterButton(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .pressScale(onClick = onClick)
-            .background(DeXStudioTheme.appColors.secondaryAction, DeXStudioTheme.appShapes.comfortable)
-            .border(3.dp, Color(0x0A000000), DeXStudioTheme.appShapes.comfortable)
-            .padding(horizontal = AppSpacing.sp14, vertical = 0.dp)
+            .background(DeXStudioTheme.appColors.secondarySystemGroupedBackground, DeXStudioTheme.appShapes.segmentedControl)
+            .padding(horizontal = AppSpacing.sp14, vertical = AppSpacing.sp8)
     ) {
         Text(
             text = text,
-            style = DeXStudioTheme.textStyles.body,
-            color = DeXStudioTheme.appColors.textSecondary
+            style = DeXStudioTheme.textStyles.subhead,
+            color = DeXStudioTheme.appColors.label
         )
     }
 }
 
+/**
+ * Circular glass control button (DESIGN.md §3.4 Glass Buttons)
+ */
 @Composable
 fun MediaControlButton(
     text: String,
@@ -127,13 +146,13 @@ fun MediaControlButton(
         horizontalArrangement = Arrangement.Center,
         modifier = modifier
             .pressScale(onClick = onClick)
-            .background(DeXStudioTheme.appColors.overlay, DeXStudioTheme.appShapes.circle)
+            .glassBg(GlassVariant.Clear)
             .padding(AppSpacing.sp10)
     ) {
         Text(
             text = text,
-            style = DeXStudioTheme.textStyles.body,
-            color = DeXStudioTheme.appColors.textTertiary
+            style = DeXStudioTheme.textStyles.subhead,
+            color = DeXStudioTheme.appColors.label
         )
     }
 }

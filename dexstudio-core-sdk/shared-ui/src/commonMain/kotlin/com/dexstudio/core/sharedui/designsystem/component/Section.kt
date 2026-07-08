@@ -14,18 +14,13 @@ import com.dexstudio.core.sharedui.designsystem.token.AppSpacing
 fun HeroSection(
     title: String,
     subtitle: String,
-    isDark: Boolean,
+    isDark: Boolean = false, // Kept for API compatibility, though theme handles dark mode natively
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val bgColor = if (isDark) DeXStudioTheme.appColors.background else DeXStudioTheme.appColors.background
-    val textColor = if (isDark) DeXStudioTheme.appColors.textPrimary else DeXStudioTheme.appColors.textPrimary
-    
-    // Quick fix for the "isDark" parameter which usually meant Black vs Gray.
-    // Assuming DarkAppColorScheme or LightAppColorScheme handles this generally,
-    // but we can manually override for visual rhythm.
-    val actualBgColor = if (isDark) com.dexstudio.core.sharedui.designsystem.token.PureBlack else com.dexstudio.core.sharedui.designsystem.token.LightGray
-    val actualTextColor = if (isDark) com.dexstudio.core.sharedui.designsystem.token.PureWhite else com.dexstudio.core.sharedui.designsystem.token.NearBlack
+    // If explicitly forcing dark rhythm, use a secondary background, else use standard background
+    val actualBgColor = if (isDark) DeXStudioTheme.appColors.secondarySystemGroupedBackground else DeXStudioTheme.appColors.systemGroupedBackground
+    val actualTextColor = DeXStudioTheme.appColors.label
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -36,14 +31,14 @@ fun HeroSection(
     ) {
         Text(
             text = title,
-            style = DeXStudioTheme.textStyles.displayHero,
+            style = DeXStudioTheme.textStyles.largeTitle,
             color = actualTextColor,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(AppSpacing.s))
         Text(
             text = subtitle,
-            style = DeXStudioTheme.textStyles.tileHeading,
+            style = DeXStudioTheme.textStyles.title2,
             color = actualTextColor,
             textAlign = TextAlign.Center
         )

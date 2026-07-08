@@ -198,7 +198,6 @@ if (extra.has("useLocalCore") && extra.get("useLocalCore") == "true") {
 * **Forced Dependency Lock:** Apps must consume the core stack as version-tagged remote Maven binaries. [1]
 * **Isolated CI/CD Pipelines:** App deployment cycles run independently of each other. AppHide can release 4 times a week, while Calculator is updated only once a month.
 
-Avoid AI slops Ideas (like: gradients, emojis, over-reliance on "inter" fonts, Missing Accessibility: Lack of ARIA labels, low color contrast in dark modes, and poor HTML landmarks, uniform component sizing.)
 
 Follow strictly the Modern Android Architecture (MVVM/MVI) with Clean Architecture.
 

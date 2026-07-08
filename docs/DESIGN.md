@@ -1,313 +1,833 @@
-# Design System Inspired by Apple
+# iOS 27 Design Theory System
 
-## 1. Visual Theme & Atmosphere
+> **Source of truth:** Apple's official iOS & iPadOS 27 UI Kit ([Figma](https://www.figma.com/community/file/1651309003795292092/ios-and-ipados-27)) and the [WWDC 2026 showcase image](https://devimages-cdn.apple.com/wwdc-services/articles/images/E92B44C5-04EA-42F4-BB2A-AF394EFED6BB/2048.jpeg).
+>
+> Every component, token, and behavior in this project **must** trace back to this document. If it is not here, it does not ship.
 
-Apple's website is a masterclass in controlled drama — vast expanses of pure black and near-white serve as cinematic backdrops for products that are photographed as if they were sculptures in a gallery. The design philosophy is reductive to its core: every pixel exists in service of the product, and the interface itself retreats until it becomes invisible. This is not minimalism as aesthetic preference; it is minimalism as reverence for the object.
+---
 
-The typography anchors everything. San Francisco (SF Pro Display for large sizes, SF Pro Text for body) is Apple's proprietary typeface, engineered with optical sizing that automatically adjusts letterforms depending on point size. At display sizes (56px), weight 600 with a tight line-height of 1.07 and subtle negative letter-spacing (-0.28px) creates headlines that feel machined rather than typeset — precise, confident, and unapologetically direct. At body sizes (17px), the tracking loosens slightly (-0.374px) and line-height opens to 1.47, creating a reading rhythm that is comfortable without ever feeling slack.
+## 0. Critical Design Rules
 
-The color story is starkly binary. Product sections alternate between pure black (`#000000`) backgrounds with white text and light gray (`#f5f5f7`) backgrounds with near-black text (`#1d1d1f`). This creates a cinematic pacing — dark sections feel immersive and premium, light sections feel open and informational. The only chromatic accent is Apple Blue (`#0071e3`), reserved exclusively for interactive elements: links, buttons, and focus states. This singular accent color in a sea of neutrals gives every clickable element unmistakable visibility.
+### Anti-Patterns (Strictly Forbidden)
 
-**Key Characteristics:**
-- SF Pro Display/Text with optical sizing — letterforms adapt automatically to size context
-- Binary light/dark section rhythm: black (`#000000`) alternating with light gray (`#f5f5f7`)
-- Single accent color: Apple Blue (`#0071e3`) reserved exclusively for interactive elements
-- Product-as-hero photography on solid color fields — no gradients, no textures, no distractions
-- Extremely tight headline line-heights (1.07-1.14) creating compressed, billboard-like impact
-- Full-width section layout with centered content — the viewport IS the canvas
-- Pill-shaped CTAs (980px radius) creating soft, approachable action buttons
-- Generous whitespace between sections allowing each product moment to breathe
+| Forbidden | Why | What To Do Instead |
+|:---|:---|:---|
+| Decorative gradients | AI slop; iOS uses flat tints and translucent materials, never rainbow/gradient fills | Use **Liquid Glass materials** for functional layers; **solid semantic colors** for content |
+| Emoji as UI icons | Unprofessional; renders inconsistently across platforms | Use **SF Symbols** style monochrome glyphs (line-weight ~1.5pt, optically centered) |
+| Inter font anywhere | Overused default; misaligns with iOS typographic voice | Use **system default** (`FontFamily.Default` which maps to SF Pro on iOS, Roboto on Android) |
+| Uniform component sizing | Every button/card same size looks lifeless | Use **Dynamic Type** scale; size components to their **content role** and **touch target** requirements |
+| Drop shadows on content cards | iOS grouped lists are flat; shadow is a Material Design pattern | Use **background color layering** to establish hierarchy. Shadow only on **floating glass** elements (very subtle, diffused) |
+| Hardcoded hex in components | Breaks dark mode, breaks accessibility | Always reference **semantic color tokens** |
+| Rounded corners via simple radius | iOS uses continuous superellipse ("squircle"), not CSS border-radius | Use **`RoundedCornerShape`** with values from the shape scale (approximation); on iOS native use `continuous` corner style |
 
-## 2. Color Palette & Roles
+---
 
-### Primary
-- **Pure Black** (`#000000`): Hero section backgrounds, immersive product showcases. The darkest canvas for the brightest products.
-- **Light Gray** (`#f5f5f7`): Alternate section backgrounds, informational areas. Not white — the slight blue-gray tint prevents sterility.
-- **Near Black** (`#1d1d1f`): Primary text on light backgrounds, dark button fills. Slightly warmer than pure black for comfortable reading.
+## 1. Visual Philosophy — Liquid Glass
 
-### Interactive
-- **Apple Blue** (`#0071e3`): `--sk-focus-color`, primary CTA backgrounds, focus rings. The ONLY chromatic color in the interface.
-- **Link Blue** (`#0066cc`): `--sk-body-link-color`, inline text links. Slightly darker than Apple Blue for text-level readability.
-- **Bright Blue** (`#2997ff`): Links on dark backgrounds. Higher luminance for contrast on black sections.
+iOS 27 introduces **Liquid Glass**: a translucent, depth-aware material system where functional UI layers (navigation, toolbars, tab bars, sheets, menus) **float above** the content layer. The screenshot reveals the core principles:
 
-### Text
-- **White** (`#ffffff`): Text on dark backgrounds, button text on blue/dark CTAs.
-- **Near Black** (`#1d1d1f`): Primary body text on light backgrounds.
-- **Black 80%** (`rgba(0, 0, 0, 0.8)`): Secondary text, nav items on light backgrounds. Slightly softened.
-- **Black 48%** (`rgba(0, 0, 0, 0.48)`): Tertiary text, disabled states, carousel controls.
+### 1.1 The Two-Layer Architecture
 
-### Surface & Dark Variants
-- **Dark Surface 1** (`#272729`): Card backgrounds in dark sections.
-- **Dark Surface 2** (`#262628`): Subtle surface variation in dark contexts.
-- **Dark Surface 3** (`#28282a`): Elevated cards on dark backgrounds.
-- **Dark Surface 4** (`#2a2a2d`): Highest dark surface elevation.
-- **Dark Surface 5** (`#242426`): Deepest dark surface tone.
+```
+┌─────────────────────────────────────────────────┐
+│  GLASS LAYER (Functional)                       │
+│  ┌──────────────────────────────────────────┐   │
+│  │  Nav Bars, Tab Bars, Toolbars, Menus,    │   │
+│  │  Alerts, Sheets, Context Menus, Keyboards│   │
+│  │  ──────────────────────────────────       │   │
+│  │  Semi-transparent + Backdrop blur         │   │
+│  │  Thin specular border (1px white @ 8%)    │   │
+│  │  Continuous corner shapes                 │   │
+│  └──────────────────────────────────────────┘   │
+│                                                  │
+│  CONTENT LAYER (Informational)                   │
+│  ┌──────────────────────────────────────────┐   │
+│  │  Lists, Cards, Text, Images, Media       │   │
+│  │  ──────────────────────────────────       │   │
+│  │  Opaque solid backgrounds                 │   │
+│  │  Semantic color fills                     │   │
+│  │  No blur, no translucency                 │   │
+│  └──────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────┘
+```
 
-### Button States
-- **Button Active** (`#ededf2`): Active/pressed state for light buttons.
-- **Button Default Light** (`#fafafc`): Search/filter button backgrounds.
-- **Overlay** (`rgba(210, 210, 215, 0.64)`): Media control scrims, overlays.
-- **White 32%** (`rgba(255, 255, 255, 0.32)`): Hover state on dark modal close buttons.
+### 1.2 Liquid Glass Material Properties
 
-### Shadows
-- **Card Shadow** (`rgba(0, 0, 0, 0.22) 3px 5px 30px 0px`): Soft, diffused elevation for product cards. Offset and wide blur create a natural, photographic shadow.
+Observed from the screenshot — every glass element shares these visual traits:
 
-## 3. Typography Rules
+| Property | Value (Dark Mode) | Value (Light Mode) |
+|:---|:---|:---|
+| **Background fill** | `#1C1C1E` at ~55% opacity over blurred backdrop | `#FFFFFF` at ~55% opacity over blurred backdrop |
+| **Backdrop blur radius** | 20–40pt | 20–40pt |
+| **Specular border** | `#FFFFFF` at 8–12% opacity, 0.5pt width | `#000000` at 5–8% opacity, 0.5pt width |
+| **Inner highlight** | Top edge: `#FFFFFF` at 4% opacity | Top edge: `#FFFFFF` at 6% opacity |
+| **Shadow** | `#000000` at 15–20%, offset (0, 2pt), blur 10pt | `#000000` at 8%, offset (0, 1pt), blur 6pt |
 
-### Font Family
-- **Display**: `SF Pro Display`, with fallbacks: `SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif`
-- **Body**: `SF Pro Text`, with fallbacks: `SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif`
-- SF Pro Display is used at 20px and above; SF Pro Text is optimized for 19px and below.
+### 1.3 Glass Variants
 
-### Hierarchy
+| Variant | Opacity | Use Case |
+|:---|:---|:---|
+| **Regular** | ~55% fill | Navigation bars, tab bars, toolbars, standard glass surfaces |
+| **Clear** | ~25% fill | Small floating controls over rich imagery (e.g., media overlays) |
+| **Thick** | ~72% fill | Keyboards, alerts, action sheets — maximum legibility |
+| **Identity** | 0% / disabled | When glass effect should be toggled off entirely |
 
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Hero | SF Pro Display | 56px (3.50rem) | 600 | 1.07 (tight) | -0.28px | Product launch headlines, maximum impact |
-| Section Heading | SF Pro Display | 40px (2.50rem) | 600 | 1.10 (tight) | normal | Feature section titles |
-| Tile Heading | SF Pro Display | 28px (1.75rem) | 400 | 1.14 (tight) | 0.196px | Product tile headlines |
-| Card Title | SF Pro Display | 21px (1.31rem) | 700 | 1.19 (tight) | 0.231px | Bold card headings |
-| Sub-heading | SF Pro Display | 21px (1.31rem) | 400 | 1.19 (tight) | 0.231px | Regular card headings |
-| Nav Heading | SF Pro Text | 34px (2.13rem) | 600 | 1.47 | -0.374px | Large navigation headings |
-| Sub-nav | SF Pro Text | 24px (1.50rem) | 300 | 1.50 | normal | Light sub-navigation text |
-| Body | SF Pro Text | 17px (1.06rem) | 400 | 1.47 | -0.374px | Standard reading text |
-| Body Emphasis | SF Pro Text | 17px (1.06rem) | 600 | 1.24 (tight) | -0.374px | Emphasized body text, labels |
-| Button Large | SF Pro Text | 18px (1.13rem) | 300 | 1.00 (tight) | normal | Large button text, light weight |
-| Button | SF Pro Text | 17px (1.06rem) | 400 | 2.41 (relaxed) | normal | Standard button text |
-| Link | SF Pro Text | 14px (0.88rem) | 400 | 1.43 | -0.224px | Body links, "Learn more" |
-| Caption | SF Pro Text | 14px (0.88rem) | 400 | 1.29 (tight) | -0.224px | Secondary text, descriptions |
-| Caption Bold | SF Pro Text | 14px (0.88rem) | 600 | 1.29 (tight) | -0.224px | Emphasized captions |
-| Micro | SF Pro Text | 12px (0.75rem) | 400 | 1.33 | -0.12px | Fine print, footnotes |
-| Micro Bold | SF Pro Text | 12px (0.75rem) | 600 | 1.33 | -0.12px | Bold fine print |
-| Nano | SF Pro Text | 10px (0.63rem) | 400 | 1.47 | -0.08px | Legal text, smallest size |
+### 1.4 Accessibility: Reduce Transparency
 
-### Principles
-- **Optical sizing as philosophy**: SF Pro automatically switches between Display and Text optical sizes. Display versions have wider letter spacing and thinner strokes optimized for large sizes; Text versions are tighter and sturdier for small sizes. This means the font literally changes its DNA based on context.
-- **Weight restraint**: The scale spans 300 (light) to 700 (bold) but most text lives at 400 (regular) and 600 (semibold). Weight 300 appears only on large decorative text. Weight 700 is rare, used only for bold card titles.
-- **Negative tracking at all sizes**: Unlike most systems that only track headlines, Apple applies subtle negative letter-spacing even at body sizes (-0.374px at 17px, -0.224px at 14px, -0.12px at 12px). This creates universally tight, efficient text.
-- **Extreme line-height range**: Headlines compress to 1.07 while body text opens to 1.47, and some button contexts stretch to 2.41. This dramatic range creates clear visual hierarchy through rhythm alone.
+When the user enables **Reduce Transparency**, all glass materials degrade to:
+- **Opaque** `secondarySystemBackground` fill (no blur, no transparency)
+- Borders become `separator` color at full opacity
+- All specular effects removed
 
-## 4. Component Stylings
+---
 
-### Buttons
+## 2. Color System — iOS Semantic Tokens
 
-**Primary Blue (CTA)**
-- Background: `#0071e3` (Apple Blue)
-- Text: `#ffffff`
-- Padding: 8px 15px
-- Radius: 8px
-- Border: 1px solid transparent
-- Font: SF Pro Text, 17px, weight 400
-- Hover: background brightens slightly
-- Active: `#ededf2` background shift
-- Focus: `2px solid var(--sk-focus-color, #0071E3)` outline
-- Use: Primary call-to-action ("Buy", "Shop iPhone")
+### 2.1 Background Colors
 
-**Primary Dark**
-- Background: `#1d1d1f`
-- Text: `#ffffff`
-- Padding: 8px 15px
-- Radius: 8px
-- Font: SF Pro Text, 17px, weight 400
-- Use: Secondary CTA, dark variant
+Every background color has a **purpose**. Never pick arbitrarily.
 
-**Pill Link (Learn More / Shop)**
-- Background: transparent
-- Text: `#0066cc` (light bg) or `#2997ff` (dark bg)
-- Radius: 980px (full pill)
-- Border: 1px solid `#0066cc`
-- Font: SF Pro Text, 14px-17px
-- Hover: underline decoration
-- Use: "Learn more" and "Shop" links — the signature Apple inline CTA
+| Token | Light | Dark | When To Use |
+|:---|:---|:---|:---|
+| `systemBackground` | `#FFFFFF` | `#000000` | Root-level screen background |
+| `secondarySystemBackground` | `#F2F2F7` | `#1C1C1E` | Secondary content areas, elevated surfaces |
+| `tertiarySystemBackground` | `#FFFFFF` | `#2C2C2E` | Third level of hierarchy (content inside secondary) |
+| `systemGroupedBackground` | `#F2F2F7` | `#000000` | Root background for grouped list screens (e.g., Settings) |
+| `secondarySystemGroupedBackground` | `#FFFFFF` | `#1C1C1E` | Card/row background inside grouped lists |
+| `tertiarySystemGroupedBackground` | `#F2F2F7` | `#2C2C2E` | Third level inside grouped lists |
 
-**Filter / Search Button**
-- Background: `#fafafc`
-- Text: `rgba(0, 0, 0, 0.8)`
-- Padding: 0px 14px
-- Radius: 11px
-- Border: 3px solid `rgba(0, 0, 0, 0.04)`
-- Focus: `2px solid var(--sk-focus-color, #0071E3)` outline
-- Use: Search bars, filter controls
+### 2.2 Label (Text) Colors
 
-**Media Control**
-- Background: `rgba(210, 210, 215, 0.64)`
-- Text: `rgba(0, 0, 0, 0.48)`
-- Radius: 50% (circular)
-- Active: scale(0.9), background shifts
-- Focus: `2px solid var(--sk-focus-color, #0071e3)` outline, white bg, black text
-- Use: Play/pause, carousel arrows
+| Token | Light | Dark | When To Use |
+|:---|:---|:---|:---|
+| `label` | `#000000` | `#FFFFFF` | Primary text — titles, body copy |
+| `secondaryLabel` | `rgba(60,60,67, 0.60)` | `rgba(235,235,245, 0.60)` | Subtitles, supplementary text |
+| `tertiaryLabel` | `rgba(60,60,67, 0.30)` | `rgba(235,235,245, 0.30)` | Placeholder text, disabled labels |
+| `quaternaryLabel` | `rgba(60,60,67, 0.18)` | `rgba(235,235,245, 0.18)` | Watermarks, very low-priority text |
 
-### Cards & Containers
-- Background: `#f5f5f7` (light) or `#272729`-`#2a2a2d` (dark)
-- Border: none (borders are rare in Apple's system)
-- Radius: 5px-8px
-- Shadow: `rgba(0, 0, 0, 0.22) 3px 5px 30px 0px` for elevated product cards
-- Content: centered, generous padding
-- Hover: no standard hover state — cards are static, links within them are interactive
+### 2.3 Fill Colors (Interactive Surfaces)
 
-### Navigation
-- Background: `rgba(0, 0, 0, 0.8)` (translucent dark) with `backdrop-filter: saturate(180%) blur(20px)`
-- Height: 48px (compact)
-- Text: `#ffffff` at 12px, weight 400
-- Active: underline on hover
-- Logo: Apple logomark (SVG) centered or left-aligned, 17x48px viewport
-- Mobile: collapses to hamburger with full-screen overlay menu
-- The nav floats above content, maintaining its dark translucent glass regardless of section background
+Visible on the screenshot's toggles, search bar, slider tracks, and segmented controls:
 
-### Image Treatment
-- Products on solid-color fields (black or white) — no backgrounds, no context, just the object
-- Full-bleed section images that span the entire viewport width
-- Product photography at extremely high resolution with subtle shadows
-- Lifestyle images confined to rounded-corner containers (12px+ radius)
+| Token | Light | Dark | When To Use |
+|:---|:---|:---|:---|
+| `systemFill` | `rgba(120,120,128, 0.20)` | `rgba(120,120,128, 0.36)` | Toggle OFF track, thin overlays |
+| `secondarySystemFill` | `rgba(120,120,128, 0.16)` | `rgba(120,120,128, 0.32)` | Gray button backgrounds, search bar fill |
+| `tertiarySystemFill` | `rgba(120,120,128, 0.12)` | `rgba(120,120,128, 0.24)` | Segmented control background, text field fill |
+| `quaternarySystemFill` | `rgba(120,120,128, 0.08)` | `rgba(120,120,128, 0.18)` | Lightest fill, used for very subtle backgrounds |
 
-### Distinctive Components
+### 2.4 Separator Colors
 
-**Product Hero Module**
-- Full-viewport-width section with solid background (black or `#f5f5f7`)
-- Product name as the primary headline (SF Pro Display, 56px, weight 600)
-- One-line descriptor below in lighter weight
-- Two pill CTAs side by side: "Learn more" (outline) and "Buy" / "Shop" (filled)
+Visible as the thin lines between context menu items and list rows in the screenshot:
 
-**Product Grid Tile**
-- Square or near-square card on contrasting background
-- Product image dominating 60-70% of the tile
-- Product name + one-line description below
-- "Learn more" and "Shop" link pair at bottom
+| Token | Light | Dark | When To Use |
+|:---|:---|:---|:---|
+| `separator` | `rgba(60,60,67, 0.29)` | `rgba(84,84,88, 0.60)` | Separators that **do not** extend to full width (inset) |
+| `opaqueSeparator` | `#C6C6C8` | `#38383A` | Separators that extend full width |
 
-**Feature Comparison Strip**
-- Horizontal scroll of product variants
-- Each variant as a vertical card with image, name, and key specs
-- Minimal chrome — the products speak for themselves
+### 2.5 Tint / Accent Colors
 
-## 5. Layout Principles
+These are the vibrant colored pills, icons, and interactive elements visible throughout the screenshot:
 
-### Spacing System
-- Base unit: 8px
-- Scale: 2px, 4px, 5px, 6px, 7px, 8px, 9px, 10px, 11px, 14px, 15px, 17px, 20px, 24px
-- Notable characteristic: the scale is dense at small sizes (2-11px) with granular 1px increments, then jumps in larger steps. This allows precise micro-adjustments for typography and icon alignment.
+| Token | Light | Dark | Seen In Screenshot As |
+|:---|:---|:---|:---|
+| `systemBlue` | `#007AFF` | `#0A84FF` | "Allow" button, "Continue" button, "Today" tab icon, slider fill, checkmark circle |
+| `systemRed` | `#FF3B30` | `#FF453A` | "Delete" button, "Flag" icon, destructive actions |
+| `systemGreen` | `#34C759` | `#30D158` | Toggle ON track, "Play" button accent |
+| `systemOrange` | `#FF9500` | `#FF9F0A` | Airplane Mode icon background |
+| `systemYellow` | `#FFCC00` | `#FFD60A` | Highlights, stars |
+| `systemTeal` | `#30B0C7` | `#40CBE0` | Information accents |
+| `systemCyan` | `#32ADE6` | `#64D2FF` | Links on dark backgrounds |
+| `systemIndigo` | `#5856D6` | `#5E5CE6` | Deep accent (Reply icon background in screenshot) |
+| `systemPurple` | `#AF52DE` | `#BF5AF2` | Creative/media accent |
+| `systemPink` | `#FF2D55` | `#FF375F` | Playful accent |
+| `systemBrown` | `#A2845E` | `#AC8E68` | Earthy, natural elements |
+| `systemGray` | `#8E8E93` | `#8E8E93` | Neutral — unselected tab icons, inactive controls |
+| `systemGray2` | `#AEAEB2` | `#636366` | Secondary neutral |
+| `systemGray3` | `#C7C7CC` | `#48484A` | Inactive dot indicators, drag handles |
+| `systemGray4` | `#D1D1D6` | `#3A3A3C` | Light borders |
+| `systemGray5` | `#E5E5EA` | `#2C2C2E` | Background fills |
+| `systemGray6` | `#F2F2F7` | `#1C1C1E` | Lightest gray background |
 
-### Grid & Container
-- Max content width: approximately 980px (the recurring "980px radius" in pill buttons echoes this width)
-- Hero: full-viewport-width sections with centered content block
-- Product grids: 2-3 column layouts within centered container
-- Single-column for hero moments — one product, one message, full attention
-- No visible grid lines or gutters — spacing creates implied structure
+---
 
-### Whitespace Philosophy
-- **Cinematic breathing room**: Each product section occupies a full viewport height (or close to it). The whitespace between products is not empty — it is the pause between scenes in a film.
-- **Vertical rhythm through color blocks**: Rather than using spacing alone to separate sections, Apple uses alternating background colors (black, `#f5f5f7`, white). Each color change signals a new "scene."
-- **Compression within, expansion between**: Text blocks are tightly set (negative letter-spacing, tight line-heights) while the space surrounding them is vast. This creates a tension between density and openness.
+## 3. Typography — Dynamic Type Scale
 
-### Border Radius Scale
-- Micro (5px): Small containers, link tags
-- Standard (8px): Buttons, product cards, image containers
-- Comfortable (11px): Search inputs, filter buttons
-- Large (12px): Feature panels, lifestyle image containers
-- Full Pill (980px): CTA links ("Learn more", "Shop"), navigation pills
-- Circle (50%): Media controls (play/pause, arrows)
+Font: **System Default** (SF Pro on Apple platforms, Roboto on Android).
+Never import Inter, Poppins, or any web font.
 
-## 6. Depth & Elevation
+| Style | Size | Weight | Line Height | Letter Spacing | Usage (from screenshot) |
+|:---|:---|:---|:---|:---|:---|
+| **Large Title** | 34sp | Regular | 41sp | 0.37sp | Screen titles in navigation bars |
+| **Title 1** | 28sp | Regular | 34sp | 0.36sp | Section headings |
+| **Title 2** | 22sp | Regular | 28sp | 0.35sp | Subsection headings |
+| **Title 3** | 20sp | Regular | 25sp | 0.38sp | Card titles |
+| **Headline** | 17sp | Semi-Bold | 22sp | −0.41sp | "Allow Notifications?", list row primary labels, song title "Everything Is Peaceful" |
+| **Body** | 17sp | Regular | 22sp | −0.41sp | Alert description text, list row values, button labels |
+| **Callout** | 16sp | Regular | 21sp | −0.32sp | Secondary button text |
+| **Subhead** | 15sp | Regular | 20sp | −0.24sp | "Not Connected", detail text in list rows |
+| **Footnote** | 13sp | Regular | 18sp | −0.08sp | Alert body text, section headers ("ALLOW NOTIFICATIONS?"), supplementary info |
+| **Caption 1** | 12sp | Regular | 16sp | 0sp | Timestamps "0:46", tab bar labels "Today" "Games" |
+| **Caption 2** | 11sp | Regular | 13sp | 0.07sp | Smallest text — badges, micro labels |
 
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Flat (Level 0) | No shadow, solid background | Standard content sections, text blocks |
-| Navigation Glass | `backdrop-filter: saturate(180%) blur(20px)` on `rgba(0,0,0,0.8)` | Sticky navigation bar — the glass effect |
-| Subtle Lift (Level 1) | `rgba(0, 0, 0, 0.22) 3px 5px 30px 0px` | Product cards, floating elements |
-| Media Control | `rgba(210, 210, 215, 0.64)` background with scale transforms | Play/pause buttons, carousel controls |
-| Focus (Accessibility) | `2px solid #0071e3` outline | Keyboard focus on all interactive elements |
+---
 
-**Shadow Philosophy**: Apple uses shadow extremely sparingly. The primary shadow (`3px 5px 30px` with 0.22 opacity) is soft, wide, and offset — mimicking a diffused studio light casting a natural shadow beneath a physical object. This reinforces the "product as physical sculpture" metaphor. Most elements have NO shadow at all; elevation comes from background color contrast (dark card on darker background, or light card on slightly different gray).
+## 4. Shape Scale — Continuous Corners (Squircles)
 
-### Decorative Depth
-- Navigation glass: the translucent, blurred navigation bar is the most recognizable depth element, creating a sense of floating UI above scrolling content
-- Section color transitions: depth is implied by the alternation between black and light gray sections rather than by shadows
-- Product photography shadows: the products themselves cast shadows in their photography, so the UI doesn't need to add synthetic ones
+iOS uses **superellipse** (continuous) corner curves, not standard CSS `border-radius`. In Compose, we approximate with `RoundedCornerShape` but the visual intent is always a squircle.
 
-## 7. Do's and Don'ts
+| Token | Radius | Used For |
+|:---|:---|:---|
+| `micro` | 5dp | Keyboard individual keys |
+| `small` | 8dp | Small tags, compact buttons |
+| `standard` | 10dp | List section cards, grouped backgrounds, inset cards |
+| `comfortable` | 12dp | Glass surfaces, buttons, glass small elements |
+| `medium` | 14dp | Alerts, context menus |
+| `large` | 16dp | Glass cards, media cards, tab bar capsule |
+| `xLarge` | 22dp | Sheets, large modals |
+| `xxLarge` | 28dp | Full-screen sheets |
+| `searchBar` | 26dp | Search bar capsule |
+| `segmentedControl` | 9dp | Segmented control outer + inner segment |
+| `pill` | 980dp | Pill buttons (effectively a capsule via absurd radius) |
+| `circle` | 50% | Circular buttons, toggle knobs, avatar clips |
 
-### Do
-- Use SF Pro Display at 20px+ and SF Pro Text below 20px — respect the optical sizing boundary
-- Apply negative letter-spacing at all text sizes (not just headlines) — Apple tracks tight universally
-- Use Apple Blue (`#0071e3`) ONLY for interactive elements — it must be the singular accent
-- Alternate between black and light gray (`#f5f5f7`) section backgrounds for cinematic rhythm
-- Use 980px pill radius for CTA links — the signature Apple link shape
-- Keep product imagery on solid-color fields with no competing visual elements
-- Use the translucent dark glass (`rgba(0,0,0,0.8)` + blur) for sticky navigation
-- Compress headline line-heights to 1.07-1.14 — Apple headlines are famously tight
+---
 
-### Don't
-- Don't introduce additional accent colors — the entire chromatic budget is spent on blue
-- Don't use heavy shadows or multiple shadow layers — Apple's shadow system is one soft diffused shadow or nothing
-- Don't use borders on cards or containers — Apple almost never uses visible borders (except on specific buttons)
-- Don't apply wide letter-spacing to SF Pro — it is designed to run tight at every size
-- Don't use weight 800 or 900 — the maximum is 700 (bold), and even that is rare
-- Don't add textures, patterns, or gradients to backgrounds — solid colors only
-- Don't make the navigation opaque — the glass blur effect is essential to the Apple UI identity
-- Don't center-align body text — Apple body copy is left-aligned; only headlines center
-- Don't use rounded corners larger than 12px on rectangular elements (980px is for pills only)
+## 5. Spacing Scale
 
-## 8. Responsive Behavior
+Base unit: **8pt grid**. Everything aligns to multiples of 4pt (half-grid for micro adjustments).
 
-### Breakpoints
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Small Mobile | <360px | Minimum supported, single column |
-| Mobile | 360-480px | Standard mobile layout |
-| Mobile Large | 480-640px | Wider single column, larger images |
-| Tablet Small | 640-834px | 2-column product grids begin |
-| Tablet | 834-1024px | Full tablet layout, expanded nav |
-| Desktop Small | 1024-1070px | Standard desktop layout begins |
-| Desktop | 1070-1440px | Full layout, max content width |
-| Large Desktop | >1440px | Centered with generous margins |
+| Token | Value | Used For |
+|:---|:---|:---|
+| `xxs` | 2dp | Hairline gaps, separator insets |
+| `xs` | 4dp | Tight inner padding, icon-to-text gap in compact contexts |
+| `s` | 8dp | Standard inner padding, gap between related elements |
+| `m` | 16dp | Standard outer padding, section spacing |
+| `l` | 20dp | List inset leading/trailing padding (iOS standard) |
+| `xl` | 24dp | Generous section spacing |
+| `xxl` | 32dp | Large section breaks |
+| `hero` | 48dp | Hero spacing, screen-level vertical padding |
+| | | |
+| **Semantic Aliases** | | |
+| `listInsetHorizontal` | 20dp | Leading + trailing padding for inset grouped lists |
+| `listRowVerticalPadding` | 11dp | Top + bottom padding inside each list row |
+| `sectionHeaderBottomPadding` | 6dp | Space below section header text |
+| `tabBarHeight` | 49dp | Standard tab bar component height |
+| `navBarHeight` | 44dp | Navigation bar height (inline) |
+| `searchBarHeight` | 36dp | Search bar component height |
+| `toolbarHeight` | 44dp | Bottom toolbar height |
+| `minimumTouchTarget` | 44dp | Absolute minimum hit area for any interactive element |
+| `glassBarEdgeInset` | 8dp | Inset from screen edges for floating glass bars |
 
-### Touch Targets
-- Primary CTAs: 8px 15px padding creating ~44px touch height
-- Navigation links: 48px height with adequate spacing
-- Media controls: 50% radius circular buttons, minimum 44x44px
-- "Learn more" pills: generous padding for comfortable tapping
+---
 
-### Collapsing Strategy
-- Hero headlines: 56px Display → 40px → 28px on mobile, maintaining tight line-height proportionally
-- Product grids: 3-column → 2-column → single column stacked
-- Navigation: full horizontal nav → compact mobile menu (hamburger)
-- Product hero modules: full-bleed maintained at all sizes, text scales down
-- Section backgrounds: maintain full-width color blocks at all breakpoints — the cinematic rhythm never breaks
-- Image sizing: products scale proportionally, never crop — the product silhouette is sacred
+## 6. Component Inventory
 
-### Image Behavior
-- Product photography maintains aspect ratio at all breakpoints
-- Hero product images scale down but stay centered
-- Full-bleed section backgrounds persist at every size
-- Lifestyle images may crop on mobile but maintain their rounded corners
-- Lazy loading for below-fold product images
+Every component identified from the iOS 27 screenshot, with exact specifications.
 
-## 9. Agent Prompt Guide
+---
 
-### Quick Color Reference
-- Primary CTA: Apple Blue (`#0071e3`)
-- Page background (light): `#f5f5f7`
-- Page background (dark): `#000000`
-- Heading text (light): `#1d1d1f`
-- Heading text (dark): `#ffffff`
-- Body text: `rgba(0, 0, 0, 0.8)` on light, `#ffffff` on dark
-- Link (light bg): `#0066cc`
-- Link (dark bg): `#2997ff`
-- Focus ring: `#0071e3`
-- Card shadow: `rgba(0, 0, 0, 0.22) 3px 5px 30px 0px`
+### 6.1 Buttons
 
-### Example Component Prompts
-- "Create a hero section on black background. Headline at 56px SF Pro Display weight 600, line-height 1.07, letter-spacing -0.28px, color white. One-line subtitle at 21px SF Pro Display weight 400, line-height 1.19, color white. Two pill CTAs: 'Learn more' (transparent bg, white text, 1px solid white border, 980px radius) and 'Buy' (Apple Blue #0071e3 bg, white text, 8px radius, 8px 15px padding)."
-- "Design a product card: #f5f5f7 background, 8px border-radius, no border, no shadow. Product image top 60% of card on solid background. Title at 28px SF Pro Display weight 400, letter-spacing 0.196px, line-height 1.14. Description at 14px SF Pro Text weight 400, color rgba(0,0,0,0.8). 'Learn more' and 'Shop' links in #0066cc at 14px."
-- "Build the Apple navigation: sticky, 48px height, background rgba(0,0,0,0.8) with backdrop-filter: saturate(180%) blur(20px). Links at 12px SF Pro Text weight 400, white text. Apple logo left, links centered, search and bag icons right."
-- "Create an alternating section layout: first section black bg with white text and centered product image, second section #f5f5f7 bg with #1d1d1f text. Each section near full-viewport height with 56px headline and two pill CTAs below."
-- "Design a 'Learn more' link: text #0066cc on light bg or #2997ff on dark bg, 14px SF Pro Text, underline on hover. After the text, include a right-arrow chevron character (>). Wrap in a container with 980px border-radius for pill shape when used as a standalone CTA."
+Observed: "Allow" (blue filled), "Don't Allow" (gray plain), "Delete" (red filled), "Continue" (blue filled capsule), "Cancel" (dark/gray capsule), "Play" (green filled with icon), "Cut"/"Copy"/"Paste" (toolbar text buttons).
 
-### Iteration Guide
-1. Every interactive element gets Apple Blue (`#0071e3`) — no other accent colors
-2. Section backgrounds alternate: black for immersive moments, `#f5f5f7` for informational moments
-3. Typography optical sizing: SF Pro Display at 20px+, SF Pro Text below — never mix
-4. Negative letter-spacing at all sizes: -0.28px at 56px, -0.374px at 17px, -0.224px at 14px, -0.12px at 12px
-5. The navigation glass effect (translucent dark + blur) is non-negotiable — it defines the Apple web experience
-6. Products always appear on solid color fields — never on gradients, textures, or lifestyle backgrounds in hero modules
-7. Shadow is rare and always soft: `3px 5px 30px 0.22 opacity` or nothing at all
-8. Pill CTAs use 980px radius — this creates the signature Apple rounded-rectangle-that-looks-like-a-capsule shape
+#### 6.1.1 Filled Button (Primary CTA)
+
+The **"Continue"** and **"Allow"** buttons in the screenshot.
+
+| Property | Value |
+|:---|:---|
+| **Background** | `systemBlue` (or any tint color) |
+| **Text color** | `#FFFFFF` |
+| **Typography** | Body (17sp, Regular) or Headline (17sp, Semi-Bold) |
+| **Corner radius** | `pill` (full capsule) for standalone; `comfortable` (12dp) for inline |
+| **Height** | 44dp minimum (50dp preferred for prominent CTAs) |
+| **Horizontal padding** | 20dp |
+| **Press state** | Opacity dims to 70%; subtle inward scale (0.97×) |
+| **Disabled state** | `systemFill` background, `tertiaryLabel` text |
+
+#### 6.1.2 Destructive Button
+
+The **"Delete"** button — red filled capsule.
+
+| Property | Value |
+|:---|:---|
+| **Background** | `systemRed` |
+| **Text color** | `#FFFFFF` |
+| **All other specs** | Same as Filled Button |
+
+#### 6.1.3 Gray / Secondary Button
+
+The **"Cancel"** and **"Don't Allow"** buttons.
+
+| Property | Value |
+|:---|:---|
+| **Background** | `secondarySystemFill` |
+| **Text color** | `label` (primary text color) |
+| **Corner radius** | `pill` (full capsule) |
+| **Height** | 44dp minimum |
+| **Press state** | Background darkens slightly; scale 0.97× |
+
+#### 6.1.4 Tinted Button
+
+Not prominently shown, but a standard iOS variant.
+
+| Property | Value |
+|:---|:---|
+| **Background** | `systemBlue` at 15% opacity |
+| **Text color** | `systemBlue` |
+| **Corner radius** | `comfortable` (12dp) |
+
+#### 6.1.5 Plain Text Button
+
+Menu items in the context menu ("Edit Recording", "View Transcript" etc.).
+
+| Property | Value |
+|:---|:---|
+| **Background** | Transparent |
+| **Text color** | `label` (normal) or `systemBlue` (tinted) or `systemRed` (destructive) |
+| **Typography** | Body (17sp) |
+| **Press state** | Row highlight with `systemFill` |
+| **Height** | 44dp |
+
+#### 6.1.6 Circular Icon Button
+
+The **back chevron**, **checkmark circle**, **toolbar dots** visible in the screenshot.
+
+| Property | Value |
+|:---|:---|
+| **Size** | 28dp (compact) or 36dp (standard) or 44dp (prominent) |
+| **Shape** | `circle` |
+| **Background** | Glass (for floating) or `tertiarySystemFill` (for inline) or `systemBlue` (for accent) |
+| **Icon** | Monochrome glyph, 1.5pt stroke weight, optically centered |
+| **Icon color** | `label` (default), `systemBlue` (accent), `#FFFFFF` (on filled) |
+
+#### 6.1.7 Icon-Label Swipe Action
+
+The **Reply**, **Flag**, **Delete** circles with labels below (top-left of screenshot — mail swipe actions).
+
+| Property | Value |
+|:---|:---|
+| **Icon container** | 52dp circle with tint background (`systemIndigo` for Reply, `systemOrange` for Flag, `systemRed` for Delete) |
+| **Icon** | White monochrome glyph, 22dp |
+| **Label** | Caption 1 (12sp), `label` color, centered below icon |
+| **Spacing** | 4dp between icon circle and label |
+
+#### 6.1.8 Toolbar Button Row
+
+The **"Cut" / "Copy" / "Paste"** horizontal strip and the bottom toolbar icons.
+
+| Property | Value |
+|:---|:---|
+| **Container** | Horizontal glass capsule, `thick` glass variant, `pill` shape |
+| **Button height** | 36dp |
+| **Button width** | Content-fitted + 12dp horizontal padding |
+| **Separator** | 0.5pt `separator` color between items |
+| **Text** | Callout (16sp), `label` color |
+| **End arrows** | Chevron left/right for scrolling, 28dp circle, `tertiaryLabel` |
+
+---
+
+### 6.2 Toggle Switch
+
+Visible: Multiple toggles in ON (green) and OFF (gray) states.
+
+| Property | ON State | OFF State |
+|:---|:---|:---|
+| **Track size** | 51 × 31dp | 51 × 31dp |
+| **Track color** | `systemGreen` | `systemFill` |
+| **Track shape** | `pill` (15.5dp radius) | `pill` |
+| **Knob size** | 27dp circle | 27dp circle |
+| **Knob color** | `#FFFFFF` | `#FFFFFF` |
+| **Knob shadow** | `#000000` at 15%, blur 4dp, offset (0, 2dp) | Same |
+| **Knob position** | Right-aligned (2dp inset from trailing) | Left-aligned (2dp inset from leading) |
+| **Animation** | Spring: damping 0.78, stiffness 350 | Same |
+| **Touch target** | Entire 51×31 track + 10dp padding = 71×51dp hit area | Same |
+
+---
+
+### 6.3 Segmented Control
+
+Visible: **"Style" | "Text" | "Arrange"** strip in the screenshot.
+
+| Property | Value |
+|:---|:---|
+| **Outer container** | Height 32dp, `tertiarySystemFill` background, `segmentedControl` (9dp) corner radius |
+| **Selected indicator** | White/light glass background (`secondarySystemGroupedBackground`), 7dp corner radius (slightly less than outer), floats inside with 2dp inset |
+| **Indicator animation** | Spring slide: damping 0.70, stiffness 450 |
+| **Segment text** | Subhead (15sp, Regular) for unselected; Subhead (15sp, Semi-Bold) for selected |
+| **Text color** | `label` for selected, `secondaryLabel` for unselected |
+| **Segments** | Equal width, divided evenly across container |
+| **Minimum segment width** | 60dp |
+| **Touch target** | Each segment is a full-height, full-width hit area |
+
+---
+
+### 6.4 Search Bar
+
+Visible: Magnifying glass icon + "Search" placeholder text in a rounded capsule.
+
+| Property | Value |
+|:---|:---|
+| **Height** | 36dp |
+| **Shape** | `searchBar` (26dp radius — nearly capsule) |
+| **Background** | `tertiarySystemFill` |
+| **Leading icon** | Magnifying glass, 16dp, `secondaryLabel` color, 8dp leading padding |
+| **Placeholder text** | "Search", Body (17sp), `tertiaryLabel` color |
+| **Input text** | Body (17sp), `label` color |
+| **Cancel button** | Appears on focus — plain text "Cancel" in `systemBlue`, slides in from right with spring animation |
+| **Focus state** | Background lightens slightly; cursor appears in `systemBlue` |
+| **Clear button** | Circular "×" icon, 18dp, `tertiaryLabel`, appears when text is entered |
+
+---
+
+### 6.5 Context Menu
+
+Visible: The floating menu with "Favorite", "Edit Recording", "View Transcript", "Options", "Share", "Copy", "Copy Transcript", "Duplicate".
+
+| Property | Value |
+|:---|:---|
+| **Container** | Glass material (`thick` variant), `medium` (14dp) corner radius |
+| **Width** | 250dp (standard), content-fitted with min 200dp |
+| **Item height** | 44dp |
+| **Item padding** | 16dp horizontal |
+| **Item text** | Body (17sp), `label` color |
+| **Item icon** | Trailing, 20dp monochrome glyph, `secondaryLabel` color |
+| **Separator** | 0.33pt `separator` color, inset 16dp from leading edge |
+| **Destructive item** | `systemRed` text + icon color |
+| **Group separator** | Full-width `opaqueSeparator`, 8dp vertical gap between groups |
+| **Appear animation** | Scale from anchor point (0.4× → 1.0×), spring: damping 0.68, stiffness 500, simultaneous fade 0→1 |
+| **Backdrop** | Background content dims to 60% and scales to 0.92× |
+| **Dismiss** | Tap outside, swipe away, or select an item |
+
+---
+
+### 6.6 Alert Dialog
+
+Visible: "Allow Notifications?" dialog with "Don't Allow" and "Allow" buttons.
+
+| Property | Value |
+|:---|:---|
+| **Container** | Glass material (`thick`), `medium` (14dp) corner radius, fixed width 270dp |
+| **Title** | Headline (17sp, Semi-Bold), `label` color, center-aligned |
+| **Message** | Footnote (13sp, Regular), `secondaryLabel` color, center-aligned |
+| **Title-to-message gap** | 4dp |
+| **Message-to-buttons gap** | 16dp |
+| **Button layout** | 2 buttons: side-by-side horizontal. 3+ buttons: vertical stack |
+| **Button separator** | 0.33pt `separator` color, full width |
+| **Button height** | 44dp |
+| **Button text** | Body (17sp); default action is Semi-Bold, cancel is Regular |
+| **Button colors** | Default: `systemBlue`. Destructive: `systemRed`. Cancel: `systemBlue` (Regular weight) |
+| **Button press** | Background fills with `systemFill` |
+| **Scrim** | Full-screen overlay `#000000` at 40% opacity |
+| **Appear animation** | Scale 1.1× → 1.0×, fade 0 → 1, spring: damping 0.85, stiffness 300 |
+| **Padding** | 16dp top, 16dp sides, 0dp bottom (buttons are full-width) |
+
+---
+
+### 6.7 Confirmation Alert (Destructive Variant)
+
+Visible (partially): "Are you sure you want to delete this event?" in bottom-right corner.
+
+Identical to 6.6 Alert except:
+- Title indicates destructive intent
+- Primary action button text in `systemRed`
+- Includes longer descriptive body text
+
+---
+
+### 6.8 Tab Bar
+
+Visible: The **Today | Games | Apps | Arcade** bar (App Store style).
+
+| Property | Value |
+|:---|:---|
+| **Container** | Glass material (`regular`), `large` (16dp) corner radius, **floating** with `glassBarEdgeInset` (8dp) from screen edges and bottom safe area |
+| **Height** | 49dp |
+| **Item layout** | Horizontal, equally spaced |
+| **Selected icon** | Tint color (`systemBlue`), filled variant of the SF Symbol |
+| **Unselected icon** | `systemGray`, outline variant of the SF Symbol |
+| **Icon size** | 24dp |
+| **Label** | Caption 2 (11sp), same color as icon |
+| **Icon-to-label gap** | 2dp |
+| **Selection indicator** | None (color change only — no underline or background) |
+| **Selection animation** | Spring scale 0.8× → 1.0× on the icon, tween 200ms color crossfade |
+
+---
+
+### 6.9 Navigation Bar
+
+Not shown as a standalone element, but visible through the back chevron button and large title patterns.
+
+#### 6.9.1 Large Title Navigation Bar
+
+| Property | Value |
+|:---|:---|
+| **Title text** | Large Title (34sp, Bold), `label` color, left-aligned with 20dp leading padding |
+| **Bar background** | Transparent when content is scrolled to top; transitions to glass (`regular`) as content scrolls behind |
+| **Bar height** | 96dp (44dp bar + 52dp large title area) |
+| **Collapse behavior** | On scroll up, large title smoothly shrinks into inline title (17sp, Semi-Bold, center-aligned) in 44dp bar |
+| **Back button** | `systemBlue` chevron "‹" (20dp) + optional previous title text |
+
+#### 6.9.2 Inline Navigation Bar
+
+| Property | Value |
+|:---|:---|
+| **Title text** | Headline (17sp, Semi-Bold), `label` color, center-aligned |
+| **Bar background** | Glass (`regular`) when content is scrolled behind |
+| **Height** | 44dp |
+| **Leading items** | Back chevron, or custom leading button |
+| **Trailing items** | Action buttons (1–2, in `systemBlue` or icon form) |
+
+---
+
+### 6.10 Bottom Toolbar
+
+Visible: The icon bar with compose, share, and action icons in glass capsule.
+
+| Property | Value |
+|:---|:---|
+| **Container** | Glass material (`regular`), anchored to bottom safe area |
+| **Height** | 44dp |
+| **Item layout** | Icons spaced evenly or grouped |
+| **Icon** | Monochrome glyph, 22dp, `systemBlue` (actionable) or `label` (neutral) |
+| **Separator** | None between icons (spacing handles visual separation) |
+| **Horizontal padding** | 20dp from edges |
+
+---
+
+### 6.11 Settings List Rows (Inset Grouped)
+
+Visible: "Airplane Mode" (with toggle), "Wi-Fi" (with detail + chevron), "Bluetooth" row.
+
+#### 6.11.1 List Section Container
+
+| Property | Value |
+|:---|:---|
+| **Background** | `secondarySystemGroupedBackground` |
+| **Corner radius** | `standard` (10dp) |
+| **Section header** | Footnote (13sp, Regular), `secondaryLabel`, UPPERCASE, 20dp leading padding, 6dp bottom padding |
+| **Section footer** | Footnote (13sp, Regular), `secondaryLabel`, sentence case, 20dp leading padding, 8dp top padding |
+| **Section-to-section gap** | 35dp (header included) |
+| **Outer background** | `systemGroupedBackground` |
+
+#### 6.11.2 List Row
+
+| Property | Value |
+|:---|:---|
+| **Height** | 44dp minimum (content-fitted, grows with multi-line) |
+| **Vertical padding** | 11dp top + bottom |
+| **Horizontal padding** | 20dp leading + trailing |
+| **Leading icon** | 29dp rounded square (6dp corner radius), colored background, white icon inside (17dp) |
+| **Icon-to-title gap** | 12dp |
+| **Title** | Body (17sp, Regular), `label` color |
+| **Detail text** | Subhead (15sp, Regular), `secondaryLabel` color, trailing |
+| **Trailing accessory** | Disclosure chevron "›" (14dp, `tertiaryLabel`), or Toggle, or detail text |
+| **Separator** | 0.33pt `separator` color, inset from the leading edge of the title text (not from screen edge) |
+| **Press state** | Background fills with `systemFill`, 200ms fade |
+
+**Leading Icon Color Mapping** (from screenshot):
+| Setting | Icon BG Color | Icon |
+|:---|:---|:---|
+| Airplane Mode | `systemOrange` | Airplane glyph |
+| Wi-Fi | `systemBlue` | Wi-Fi glyph |
+| Bluetooth | `systemBlue` | Bluetooth glyph |
+
+---
+
+### 6.12 Slider
+
+Visible: Horizontal blue slider (media player progress and standalone).
+
+| Property | Value |
+|:---|:---|
+| **Track height** | 4dp |
+| **Track filled** | `systemBlue` |
+| **Track unfilled** | `systemFill` |
+| **Track shape** | `pill` (2dp radius) |
+| **Knob size** | 28dp circle |
+| **Knob color** | `#FFFFFF` |
+| **Knob shadow** | `#000000` at 20%, blur 4dp, offset (0, 1dp) |
+| **Touch target** | 44dp × 44dp (centered on knob) |
+| **Drag behavior** | Continuous value update; knob scales to 1.1× while dragging |
+
+---
+
+### 6.13 Stepper
+
+Visible: The "−" / "+" horizontal control in the screenshot.
+
+| Property | Value |
+|:---|:---|
+| **Container** | `secondarySystemFill` background, `comfortable` (12dp) corner radius |
+| **Height** | 36dp |
+| **Width** | 94dp (47dp per side) |
+| **Separator** | 0.5pt `separator` color, vertical, centered |
+| **Button icons** | "−" and "+", 20dp, `systemBlue` |
+| **Press state** | Background of pressed side fills with `tertiarySystemFill` |
+| **Disabled state** | Icon becomes `tertiaryLabel`, no press response |
+
+---
+
+### 6.14 Keyboard
+
+Visible: Full dark-themed QWERTY keyboard.
+
+| Property | Value |
+|:---|:---|
+| **Container** | `thick` glass material, anchored to bottom |
+| **Key background** | `secondarySystemBackground` (letter keys), `tertiarySystemFill` (modifier keys like "123", "return") |
+| **Key shape** | `micro` (5dp) corner radius |
+| **Key height** | 42dp |
+| **Key gap** | 6dp horizontal, 12dp vertical |
+| **Key text** | Title 2 (22sp, Regular for letters), Subhead (15sp) for modifiers |
+| **Key press** | Pop-up magnified preview above key, 1.1× scale, spring animation |
+| **Special keys** | Microphone icon (dictation), globe icon (language), "return" label |
+
+---
+
+### 6.15 Media / Now Playing Card
+
+Visible: Album art + "Everything Is Peaceful" by "Bon Iver" with transport controls.
+
+| Property | Value |
+|:---|:---|
+| **Card container** | Glass material (`regular`), `large` (16dp) corner radius |
+| **Album art** | Full-bleed or inset, `comfortable` (12dp) corner radius, aspect ratio 1:1 |
+| **Song title** | Headline (17sp, Semi-Bold), `label` |
+| **Artist** | Subhead (15sp, Regular), `secondaryLabel` |
+| **Progress bar** | 2dp height, `systemBlue` fill, `systemFill` track, `pill` shape |
+| **Time labels** | Caption 1 (12sp), `secondaryLabel`, flanking progress bar |
+| **Transport icons** | Rewind (22dp), Play/Pause (32dp), Forward (22dp), `label` color |
+| **Transport spacing** | 32dp between controls |
+
+---
+
+### 6.16 Notification Banner
+
+Visible: "Shira Salehi — Leaving now" with avatar.
+
+| Property | Value |
+|:---|:---|
+| **Container** | Glass material (`regular`), `large` (16dp) corner radius, drops from top with spring |
+| **Avatar** | 36dp circle, clipped |
+| **Title** | Headline (17sp, Semi-Bold), `label` |
+| **Subtitle** | Subhead (15sp, Regular), `secondaryLabel` |
+| **Timestamp** | Caption 1 (12sp), `tertiaryLabel`, trailing |
+| **Padding** | 12dp all sides |
+| **Appear** | Slide from top, spring: damping 0.80, stiffness 350 |
+| **Dismiss** | Swipe up, or auto-dismiss after 5 seconds |
+
+---
+
+### 6.17 Date/Time Picker
+
+Visible: "3:00" with "AM"/"PM" segmented selector.
+
+| Property | Value |
+|:---|:---|
+| **Layout** | Horizontal: time display + AM/PM segment |
+| **Time display** | Title 1 (28sp, Regular), `label`, inside `tertiarySystemFill` rounded rect |
+| **AM/PM** | Vertical segmented control, `tertiarySystemFill` bg, `segmentedControl` corners, selected segment uses `secondarySystemGroupedBackground` |
+| **Selection** | Sliding glass indicator, same as segmented control behavior |
+
+---
+
+### 6.18 Edit Menu (Text Selection)
+
+Visible: Horizontal **"Cut" | "Copy" | "Paste"** bar with scroll arrows.
+
+| Property | Value |
+|:---|:---|
+| **Container** | `thick` glass material, `pill` shape, height 36dp |
+| **Items** | Horizontal, separated by 0.5pt `separator` |
+| **Item text** | Callout (16sp, Regular), `label` |
+| **Item padding** | 12dp horizontal |
+| **Scroll arrows** | "‹" and "›" at ends, 28dp, `tertiaryLabel`, appear when more items overflow |
+| **Appear** | Fade + scale from selection point, spring: damping 0.72, stiffness 400 |
+
+---
+
+### 6.19 Activity Indicator (Spinner)
+
+Visible: "Syncing..." label with implied spinner.
+
+| Property | Value |
+|:---|:---|
+| **Size** | 20dp (standard), 36dp (large) |
+| **Design** | 12-spoke wheel/arc, strokes with opacity gradient from 100% to 10% |
+| **Color** | `secondaryLabel` (default), or `#FFFFFF` on dark/colored backgrounds |
+| **Rotation** | Continuous, 1 revolution per second, stepped (12 discrete positions) |
+
+---
+
+### 6.20 Progress Bar (Linear)
+
+| Property | Value |
+|:---|:---|
+| **Track height** | 4dp |
+| **Track background** | `systemFill` |
+| **Fill** | `systemBlue` (or tint color) |
+| **Shape** | `pill` (2dp radius, rounded caps) |
+| **Animation** | Fill width animates with tween 300ms, EaseInOut |
+| **Indeterminate** | Pulsing shimmer bar that slides left → right, 2 seconds per cycle |
+
+---
+
+### 6.21 Page Control (Dots)
+
+Not directly visible but part of the standard iOS kit.
+
+| Property | Value |
+|:---|:---|
+| **Dot diameter** | 7dp |
+| **Dot gap** | 8dp center-to-center = 1dp visible gap |
+| **Active dot** | `label` color (full opacity) |
+| **Inactive dot** | `systemGray3` (or `label` at 30% opacity) |
+| **Current page indicator** | Scales to 1.3× + color change, spring animation |
+
+---
+
+### 6.22 Action Sheet
+
+Not directly visible but a standard companion to the context menu.
+
+| Property | Value |
+|:---|:---|
+| **Container** | Glass material (`thick`), `medium` (14dp) corner radius, anchored to bottom |
+| **Title** | Footnote (13sp), `secondaryLabel`, center-aligned |
+| **Message** | Footnote (13sp), `secondaryLabel`, center-aligned |
+| **Action buttons** | Full-width, 57dp height, Body (17sp), `systemBlue` (or `systemRed` for destructive) |
+| **Button separators** | 0.33pt `separator` color |
+| **Cancel button** | Separate group below with 8dp gap, Semi-Bold text, own glass container |
+| **Appear** | Slide up from bottom, spring: damping 0.85, stiffness 300 |
+| **Scrim** | `#000000` at 40% |
+
+---
+
+### 6.23 Sheet (Modal Presentation)
+
+| Property | Value |
+|:---|:---|
+| **Container** | `xLarge` (22dp) corner radius, glass or opaque `systemBackground` |
+| **Drag handle** | Centered pill, 36 × 5dp, `systemGray3`, 6dp from top edge |
+| **Detents** | Medium (~50% screen), Large (~93% screen), custom heights |
+| **Background dimming** | Behind sheet: content scales to 0.92× and corner-rounds to 10dp |
+| **Slide animation** | Spring: damping 0.85, stiffness 300 |
+| **Dismiss** | Swipe down past threshold, tap scrim |
+
+---
+
+### 6.24 Text Field
+
+| Property | Value |
+|:---|:---|
+| **Variant A — Plain** | No visible border; only a bottom separator 0.33pt `separator` |
+| **Variant B — Rounded** | `tertiarySystemFill` background, `standard` (10dp) corners, 8dp horizontal + 7dp vertical padding |
+| **Placeholder** | `tertiaryLabel` color |
+| **Input text** | Body (17sp), `label` color |
+| **Cursor** | 2dp wide, `systemBlue`, blinking |
+| **Clear button** | Circular "×", 18dp, `tertiaryLabel`, appears when text is present |
+| **Focus state** | Rounded variant: subtle `systemBlue` border at 30% opacity |
+
+---
+
+## 7. Animation Specifications
+
+All animations use **spring physics** (not linear/ease curves) unless noted.
+
+| Animation | Damping Ratio | Stiffness | Use Case |
+|:---|:---|:---|:---|
+| `liquidSpring` | 0.78 | 350 | General glass morphing, element transitions |
+| `pressScale` | Medium Bouncy | Medium-Low | Button press/release (scale 1.0 → 0.95 → 1.0) |
+| `tabBarTransition` | 0.80 | 400 | Tab bar item switching |
+| `sheetSlide` | 0.85 | 300 | Sheet presentation and dismissal |
+| `glassGlow` | — | — | `tween(200ms, EaseInOut)` — Button press glow effect |
+| `segmentSlide` | 0.70 | 450 | Segmented control indicator sliding |
+| `contextMenuScale` | 0.68 | 500 | Context menu pop-in from anchor |
+| `toggleKnob` | 0.78 | 350 | Toggle knob slide left ↔ right |
+| `searchCancel` | 0.80 | 400 | Cancel button slide-in on search focus |
+| `notificationDrop` | 0.80 | 350 | Notification banner drop from top |
+| `fadeIn` | — | — | `tween(300ms)` — Generic fade entrance |
+| `slideUp` | Low Bouncy | Low | Content slide-up entrance |
+
+---
+
+## 8. Iconography
+
+### 8.1 Icon Style Rules
+
+- **Weight:** 1.5pt stroke, consistent across all icons
+- **Style:** Monochrome, single-color, line-art (not filled by default; filled variant used for selected states)
+- **Grid:** 24 × 24dp bounding box; 20dp optical area, 2dp optical padding
+- **Color:** Inherits from parent — `label`, `secondaryLabel`, `systemBlue`, or `#FFFFFF` depending on context
+- **Source:** SF Symbols style equivalents — never emoji, never multicolor, never illustrative
+
+### 8.2 Icon Sizing by Context
+
+| Context | Bounding Box | Optical Size |
+|:---|:---|:---|
+| Tab bar | 24dp | 22dp |
+| Navigation bar button | 22dp | 20dp |
+| List row leading icon | 17dp (inside 29dp colored square) | 15dp |
+| Toolbar | 22dp | 20dp |
+| Inline text | 16dp | 14dp |
+| Button leading icon | 16dp | 14dp |
+
+---
+
+## 9. Implementation Notes for Compose Multiplatform
+
+### 9.1 Liquid Glass in KMP
+
+Since Compose Multiplatform renders via Skia (not native UIKit), true system-level blur is not available cross-platform. The strategy:
+
+| Platform | Approach |
+|:---|:---|
+| **iOS** | Use native SwiftUI shell for system bars where possible; for custom glass, use **Haze** library |
+| **Android** | Use **Haze** library (`dev.chrisbanes.haze`) for performant backdrop blur |
+| **Desktop** | Use **Haze** library; falls back to semi-transparent overlay on low-end hardware |
+| **Reduced Transparency** | Detect accessibility setting → replace all glass with opaque `secondarySystemBackground` |
+
+### 9.2 Squircle Corners
+
+Compose's `RoundedCornerShape` uses standard circular arcs. iOS uses superellipse (continuous) curves. For v1, we approximate with `RoundedCornerShape`. For v2, we can implement a custom `GenericShape` that draws a superellipse path.
+
+### 9.3 Dark Mode Is Primary
+
+The screenshot is entirely in **dark mode**. iOS 27's Liquid Glass looks most striking in dark mode. All development should be tested dark-mode-first, then verified in light mode.
+
+---
+
+## 10. Component Implementation Checklist
+
+| # | Component | Tokens Needed | Priority |
+|:---|:---|:---|:---|
+| 1 | Liquid Glass Material | glass colors, blur, border | P0 — Foundation |
+| 2 | Filled Button | tint colors, pill shape, press animation | P0 |
+| 3 | Gray Button | fill colors, pill shape | P0 |
+| 4 | Destructive Button | systemRed, pill shape | P0 |
+| 5 | Toggle Switch | systemGreen, systemFill, spring animation | P0 |
+| 6 | List Row (Inset Grouped) | semantic backgrounds, separator, leading icon | P0 |
+| 7 | List Section | grouped backgrounds, section header/footer | P0 |
+| 8 | Search Bar | fill colors, searchBar shape | P0 |
+| 9 | Segmented Control | fill colors, sliding indicator | P0 |
+| 10 | Navigation Bar (Large + Inline) | glass material, large title typography | P0 |
+| 11 | Tab Bar (Floating Glass) | glass material, tint colors | P0 |
+| 12 | Alert Dialog | thick glass, button layout | P1 |
+| 13 | Context Menu | thick glass, menu items, separator | P1 |
+| 14 | Action Sheet | thick glass, bottom anchor, cancel group | P1 |
+| 15 | Sheet (Modal) | drag handle, detents, scrim | P1 |
+| 16 | Slider | systemBlue track, white knob, shadow | P1 |
+| 17 | Stepper | fill bg, ± buttons, separator | P1 |
+| 18 | Toolbar | glass material, action icons | P1 |
+| 19 | Text Field (Plain + Rounded) | separator, placeholder, cursor | P2 |
+| 20 | Date/Time Picker | segmented AM/PM, wheel | P2 |
+| 21 | Progress Bar (Linear) | systemBlue fill | P2 |
+| 22 | Activity Indicator (Spinner) | 12-spoke, rotation | P2 |
+| 23 | Page Control (Dots) | dot sizing, active/inactive | P2 |
+| 24 | Notification Banner | glass card, avatar, slide-in | P2 |
+| 25 | Media/Now Playing Card | album art, transport controls | P2 |
+| 26 | Keyboard (Reference Only) | — | P3 (system-provided) |
+| 27 | Edit Menu | glass capsule, text items | P3 |
+| 28 | Swipe Actions | colored circles + labels | P3 |

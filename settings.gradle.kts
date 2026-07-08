@@ -26,6 +26,8 @@ rootProject.name = "AppHide"
 
 include(":apps:apphide:android")
 include(":apps:apphide:desktop")
+include(":apps:catalog:android")
+include(":apps:catalog:desktop")
 include(":apps:calculator:android")
 
 val useLocalCore = true // Simulate local dev environment

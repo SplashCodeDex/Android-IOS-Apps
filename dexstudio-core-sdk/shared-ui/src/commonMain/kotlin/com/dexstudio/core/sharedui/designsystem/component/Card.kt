@@ -9,21 +9,23 @@ import com.dexstudio.core.sharedui.designsystem.theme.DeXStudioTheme
 import com.dexstudio.core.sharedui.designsystem.token.AppSpacing
 import com.dexstudio.core.sharedui.util.cardShadow
 
+/**
+ * iOS 27 Style Floating Product Card
+ *
+ * Uses secondarySystemGroupedBackground for the card surface.
+ */
 @Composable
 fun ProductCard(
     image: @Composable () -> Unit,
     title: String,
     description: String,
     actions: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkBg: Boolean = false
+    modifier: Modifier = Modifier
 ) {
-    val bgColor = if (isDarkBg) DeXStudioTheme.appColors.surfaceDefault else DeXStudioTheme.appColors.background
-    
     Column(
         modifier = modifier
             .cardShadow()
-            .background(bgColor, DeXStudioTheme.appShapes.standard)
+            .background(DeXStudioTheme.appColors.secondarySystemGroupedBackground, DeXStudioTheme.appShapes.standard)
             .padding(AppSpacing.l)
     ) {
         Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
@@ -32,35 +34,35 @@ fun ProductCard(
         Spacer(modifier = Modifier.height(AppSpacing.m))
         Text(
             text = title,
-            style = DeXStudioTheme.textStyles.cardTitle,
-            color = DeXStudioTheme.appColors.textPrimary
+            style = DeXStudioTheme.textStyles.headline,
+            color = DeXStudioTheme.appColors.label
         )
         Spacer(modifier = Modifier.height(AppSpacing.xs))
         Text(
             text = description,
-            style = DeXStudioTheme.textStyles.caption,
-            color = DeXStudioTheme.appColors.textSecondary
+            style = DeXStudioTheme.textStyles.caption1,
+            color = DeXStudioTheme.appColors.secondaryLabel
         )
         Spacer(modifier = Modifier.height(AppSpacing.m))
         actions()
     }
 }
 
+/**
+ * iOS 27 Style Grid Tile
+ */
 @Composable
 fun ProductGridTile(
     image: @Composable () -> Unit,
     title: String,
     description: String,
     actions: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkBg: Boolean = false
+    modifier: Modifier = Modifier
 ) {
-    val bgColor = if (isDarkBg) DeXStudioTheme.appColors.surfaceDefault else DeXStudioTheme.appColors.background
-    
     Column(
         modifier = modifier
             .aspectRatio(1f)
-            .background(bgColor, DeXStudioTheme.appShapes.standard)
+            .background(DeXStudioTheme.appColors.secondarySystemGroupedBackground, DeXStudioTheme.appShapes.standard)
             .padding(AppSpacing.m)
     ) {
         Box(modifier = Modifier.fillMaxWidth().weight(0.6f)) {
@@ -69,14 +71,14 @@ fun ProductGridTile(
         Spacer(modifier = Modifier.height(AppSpacing.s))
         Text(
             text = title,
-            style = DeXStudioTheme.textStyles.tileHeading,
-            color = DeXStudioTheme.appColors.textPrimary
+            style = DeXStudioTheme.textStyles.title2,
+            color = DeXStudioTheme.appColors.label
         )
         Spacer(modifier = Modifier.height(AppSpacing.xs))
         Text(
             text = description,
-            style = DeXStudioTheme.textStyles.caption,
-            color = DeXStudioTheme.appColors.textSecondary
+            style = DeXStudioTheme.textStyles.caption1,
+            color = DeXStudioTheme.appColors.secondaryLabel
         )
         Spacer(modifier = Modifier.height(AppSpacing.s))
         actions()
