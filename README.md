@@ -1,12 +1,16 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# DeXStudio Apps Collection
 
-# Run and deploy your AI Studio app
+Welcome to the DeXStudio Multi-App workspace. This repository houses a collection of 15+ powerful, specialized applications built on a shared Kotlin Multiplatform engine.
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/8a70a777-1888-4df4-92f7-1f5ab603c540
+## 🌟 Featured Apps
+- **AppHide**: A secure vault for hiding your applications.
+- **Calculator**: A multiplatform edge-to-edge calculation engine.
+- **Passport Picture Generator**: An AI-powered tool to generate perfectly formatted passport photos.
+- **WhatsApp Status Saver**: A quick utility to save and manage WhatsApp statuses.
+- **Resume & Cover Letter Builder**: An AI-driven text generator with exportable templates for job applications.
+- **Reverse To-Do List**: An app that logs what you accomplished today, rather than just what you need to do.
+- **Receipt Scanner & Organizer**: Extracts data from receipts to track monthly spending.
+- *...and many more to come!*
 
 ## 🏗 Architecture Overview
 
